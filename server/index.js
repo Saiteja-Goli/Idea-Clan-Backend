@@ -29,7 +29,7 @@ mongoose.connect(process.env.MONGODB_URL)
 
 // Routes
 app.get("/", (req, res) => {
-  res.send("WELCOME TO SERVER");
+  res.send("WELCOME TO SERVER...!");
 });
 
 // Applying verifyToken middleware to routes that require authentication
