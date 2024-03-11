@@ -1,8 +1,22 @@
 const Course = require('../models/course.model');
 const Lecture = require('../models/lecture.model');
 
+
+exports.getAllCourse = async (req, res) => {
+  console.log("Entering getAllCourse route");
+  try {
+    const courses = await Course.find();
+    console.log("Courses:", courses);
+    res.status(200).json({ courses });
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    res.status(500).json({ error: error.message });
+  }
+}
+
 exports.createCourse = async (req, res) => {
   try {
+    // Check if the user is an admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Permission denied' });
     }
@@ -20,28 +34,9 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-exports.updateCourse = async (req, res) => {
-  try {
-   
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Permission denied' });
-    }
-
-    const { id } = req.params;
-    const { name, description, prerequisites } = req.body;
-    const course = await Course.findByIdAndUpdate(id, { name, description, prerequisites }, { new: true });
-    if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
-    }
-    res.status(200).json({ message: 'Course updated successfully', course });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 exports.deleteCourse = async (req, res) => {
   try {
-
+    // Check if the user is an admin
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Permission denied' });
     }
@@ -51,6 +46,7 @@ exports.deleteCourse = async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });
     }
+    // Delete associated lectures
     await Lecture.deleteMany({ courseId: id });
 
     res.status(200).json({ message: 'Course deleted successfully' });
@@ -58,35 +54,3 @@ exports.deleteCourse = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-exports.getCourse = async (req, res) => {
-    try {
-      const { id } = req.params;
-      const course = await Course.findById(id);
-      if (!course) {
-        return res.status(404).json({ message: 'Course not found' });
-      }
-  
-      if (req.user.role === 'student') {
-        const enrolledCourses = req.user.enrolledCourses.map(course => course.toString());
-        if (!enrolledCourses.includes(id)) {
-          return res.status(403).json({ message: 'Permission denied' });
-        }
-      }
-  
-      res.status(200).json({ course });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  exports.getAllCourse = async (req, res) => {
-
-  try {
-    const courses = await Course.find();
-    res.status(200).json({ courses });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}

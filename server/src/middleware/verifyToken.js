@@ -1,10 +1,8 @@
 const jwt = require('jsonwebtoken');
-const secretKey = 'SecretKey';
-const User = require('../models/user.model')
+const secretKey = 'ideaclan1234';
+const User = require('../models/user.model');
 
-
-  
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -21,13 +19,12 @@ const verifyToken = (req, res, next) => {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       req.user = {
         id: user._id,
         email: user.email,
-        role: user.role 
+        role: user.role // Make sure the user's role is attached to the req.user object
       };
-
       next();
     });
   } catch (error) {
@@ -35,6 +32,5 @@ const verifyToken = (req, res, next) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = verifyToken;
