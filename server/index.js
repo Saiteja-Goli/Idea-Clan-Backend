@@ -33,7 +33,6 @@ app.get("/", (req, res) => {
 });
 
 // Applying verifyToken middleware to routes that require authentication
-app.use(verifyToken);
 app.use('/', authRoutes);
 app.use('/', courseRoutes);
 app.use('/', lectureRoutes);

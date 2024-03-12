@@ -4,27 +4,33 @@ const bcrypt = require("bcryptjs");
 const secretKey = 'ideaclan1234';
 
 exports.registerUser = async (req, res) => {
-
-  try {
-    const { name, username, email, password, role } = req.body;
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'User  already registered' });
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({
-      name,
-      email,
-      role,
-      username,
-      password: hashedPassword,
-    });
-    await user.save();
-    console.log(user);
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+console.log("Entering to register")
+try {
+  const { name, email, username, password, role } = req.body;
+  // Check if the email is already registered
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ error: 'Email already registered' });
   }
+  // Hash the password before saving it
+  const hashedPassword = await bcrypt.hash(password, 10);
+  // Create a new user instance
+  const newUser = new User({
+    name,
+    email,
+    username,
+    password: hashedPassword,
+    role,
+  });
+  // Save the user to the database
+  await newUser.save();
+  // Generate a JWT token for the newly registered user
+  const token = jwt.sign({ id: newUser._id }, secretKey);
+  res.status(201).json({ message: 'User registered successfully', token });
+} catch (error) {
+  console.error('Registration failed:', error);
+  res.status(500).json({ error: 'Internal server error' });
+}
 };
 
 exports.loginUser = async (req, res) => {
@@ -35,24 +41,23 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isPasswordValid = await bcrypt.compareSync(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ email: user.email, id: user.id }, secretKey, { expiresIn: '1h' });
-    console.log(token, "LogIn Token");
+    const token = jwt.sign({ email: user.email, id: user.id }, secretKey);
     res.status(200).json({
       user: {
         id: user._id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.fullName, // Add other user data as needed
       },
-      message: "Login successfull",
+      message: "Login successful",
       accessToken: token,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Login error", error: error.message });
   }
 };
 
