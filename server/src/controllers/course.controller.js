@@ -3,10 +3,8 @@ const Lecture = require('../models/lecture.model');
 
 
 exports.getAllCourse = async (req, res) => {
-  console.log("Entering getAllCourse route");
   try {
     const courses = await Course.find();
-    console.log("Courses:", courses);
     res.status(200).json({ courses });
   } catch (error) {
     console.error("Error fetching courses:", error);

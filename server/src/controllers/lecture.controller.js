@@ -71,40 +71,22 @@ exports.deleteLecture = async (req, res) => {
   }
 };
 
-
 exports.getAnalytics = async (req, res) => {
   try {
     const userId = req.user.id;
     const userRole = req.user.role;
-
     if (userRole === 'admin') {
-      // Fetch all students and their details
+      // Fetch analytics data for admin
       const students = await User.find({ role: 'student' }).select('name email');
-
-      // Fetch all courses and their details
       const courses = await Course.find().select('name description');
-
-      // You can add more data as needed
-
       res.status(200).json({ students, courses });
-    } else {
-      // Return regular analytics data for non-admin users
-      const totalStudents = await User.countDocuments({ role: 'student' });
-      const totalCourses = await Course.countDocuments();
-      const totalLectures = await Lecture.countDocuments();
-
-      const analyticsData = {
-        totalStudents,
-        totalCourses,
-        totalLectures
-      };
-
-      res.status(200).json(analyticsData);
+    } else if (userRole === 'student') {
+      // Return message for non-admin users
+      res.status(200).json({ msg: "Not Authorised" });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-
 }
 
 
