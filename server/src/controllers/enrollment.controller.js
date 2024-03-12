@@ -4,10 +4,12 @@ exports.selectCourses = async (req, res) => {
   try {
     const { courses } = req.body;
     const studentId = req.user.id; // Assuming you're using JWT authentication middleware to attach user information to the request
-
+    console.log(studentId);
     // Check if the student has already selected courses
     const existingEnrollments = await Enrollment.find({ studentId });
+
     if (existingEnrollments.length > 0) {
+      // Student has already selected courses
       return res.status(400).json({ message: 'You have already selected courses' });
     }
 
